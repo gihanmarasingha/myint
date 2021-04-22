@@ -1,0 +1,8 @@
+[package]
+name = "myint"
+version = "0.1"
+lean_version = "leanprover-community/lean:3.28.0"
+path = "src"
+
+[dependencies]
+mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "a28012c8427642abd900b51c1e6a17c888463064"}

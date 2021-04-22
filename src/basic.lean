@@ -41,6 +41,21 @@ begin
   { intro k, linarith, },
 end -/
 
+def prod_nat_to_prod_nat (n : ℕ × ℕ) : ℕ × ℕ := if is_nonneg' n then (n.1-n.2, 0) else (0, n.2-n.1)
+
+-- #eval (prod_nat_to_prod_nat (5,7))
+
+-- #eval (prod_nat_to_prod_nat (13, 4))
+
+def prod_nat_to_string (n : ℕ × ℕ) : string :=
+  if is_nonneg' n then to_string (n.1-n.2) else  "-" ++ to_string (n.2 - n.1)
+
+lemma prod_nat_of_is_nonneg {n : ℕ × ℕ} (h : is_nonneg' n) : prod_nat_to_prod_nat n = (n.1 - n.2, 0) :=
+by { dsimp [prod_nat_to_prod_nat], apply if_pos, exact h, }
+
+lemma prod_nat_of_is_neg {n : ℕ × ℕ} (h : ¬(is_nonneg' n)) : prod_nat_to_prod_nat n = (0, n.2 - n.1) :=
+by { dsimp [prod_nat_to_prod_nat], apply if_neg, exact h, }
+
 private lemma aux1 {x y u v : ℕ} (h : y ≤ x) (k : x + v = u + y) : u = x - y + v :=
   (nat.add_sub_cancel u y) ▸ k ▸ (nat.sub_add_comm h)
 
@@ -57,21 +72,6 @@ by rw [aux1 k h, nat.add_sub_cancel]
     propext $ iff.intro
     (λ ha, le_iff_exists_add.mpr (exists.intro (a.1-a.2) (aux2 ha k)))
     (λ hb, le_iff_exists_add.mpr (exists.intro (b.1-b.2) (aux2 hb k.symm)))) -/
-
-def prod_nat_to_prod_nat (n : ℕ × ℕ) : ℕ × ℕ := if is_nonneg' n then (n.1-n.2, 0) else (0, n.2-n.1)
-
--- #eval (prod_nat_to_prod_nat (5,7))
-
--- #eval (prod_nat_to_prod_nat (13, 4))
-
-def prod_nat_to_string (n : ℕ × ℕ) : string :=
-  if is_nonneg' n then to_string (n.1-n.2) else  "-" ++ to_string (n.2 - n.1)
-
-lemma prod_nat_of_is_nonneg {n : ℕ × ℕ} (h : is_nonneg' n) : prod_nat_to_prod_nat n = (n.1 - n.2, 0) :=
-by { dsimp [prod_nat_to_prod_nat], apply if_pos, exact h, }
-
-lemma prod_nat_of_is_neg {n : ℕ × ℕ} (h : ¬(is_nonneg' n)) : prod_nat_to_prod_nat n = (0, n.2 - n.1) :=
-by { dsimp [prod_nat_to_prod_nat], apply if_neg, exact h, }
 
 def myint_to_prod_nat (n : myint) : ℕ × ℕ :=
   quotient.lift_on n prod_nat_to_prod_nat

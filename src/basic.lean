@@ -43,19 +43,19 @@ end -/
 
 def prod_nat_to_prod_nat (n : ℕ × ℕ) : ℕ × ℕ := if is_nonneg' n then (n.1-n.2, 0) else (0, n.2-n.1)
 
--- #eval (prod_nat_to_prod_nat (5,7))
+example : prod_nat_to_prod_nat (5,7) = (0, 2) := rfl
 
--- #eval (prod_nat_to_prod_nat (13, 4))
+example : prod_nat_to_prod_nat (13, 4) = (9, 0) := rfl
 
 def prod_nat_to_string (n : ℕ × ℕ) : string :=
   if is_nonneg' n then to_string (n.1-n.2) else  "-" ++ to_string (n.2 - n.1)
 
-lemma prod_nat_of_is_nonneg {n : ℕ × ℕ} (h : is_nonneg' n) : prod_nat_to_prod_nat n = (n.1 - n.2, 0) :=
-by { dsimp [prod_nat_to_prod_nat], apply if_pos, exact h, }
+lemma prod_nat_of_is_nonneg {n : ℕ × ℕ} (h : is_nonneg' n) :
+  prod_nat_to_prod_nat n = (n.1 - n.2, 0) := if_pos h
 
-lemma prod_nat_of_is_neg {n : ℕ × ℕ} (h : ¬(is_nonneg' n)) : prod_nat_to_prod_nat n = (0, n.2 - n.1) :=
-by { dsimp [prod_nat_to_prod_nat], apply if_neg, exact h, }
-
+lemma prod_nat_of_is_neg {n : ℕ × ℕ} (h : ¬(is_nonneg' n)) :
+  prod_nat_to_prod_nat n = (0, n.2 - n.1) := if_neg h
+  
 private lemma aux1 {x y u v : ℕ} (h : y ≤ x) (k : x + v = u + y) : u = x - y + v :=
   (nat.add_sub_cancel u y) ▸ k ▸ (nat.sub_add_comm h)
 
@@ -163,10 +163,8 @@ example : ¬(is_nonneg (-10 : myint)) := dec_trivial
 
 example : [[6, 8]] + [[5, 1]] = [[2, 0]] := dec_trivial
 
-#eval [[6, 8]] + [[5, 36]]
+#eval [[6, 8]] + [[5, 36]] -- outputs `-33`.
 
-#eval ((5 - 78) : myint)
-
-#eval ((10 + 0) : myint)
+#eval ((5 - 78) : myint) -- outputs `-73`.
 
 end myint

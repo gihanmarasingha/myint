@@ -55,7 +55,7 @@ lemma prod_nat_of_is_nonneg {n : ℕ × ℕ} (h : is_nonneg' n) :
 
 lemma prod_nat_of_is_neg {n : ℕ × ℕ} (h : ¬(is_nonneg' n)) :
   prod_nat_to_prod_nat n = (0, n.2 - n.1) := if_neg h
-  
+
 private lemma aux1 {x y u v : ℕ} (h : y ≤ x) (k : x + v = u + y) : u = x - y + v :=
   (nat.add_sub_cancel u y) ▸ k ▸ (nat.sub_add_comm h)
 
@@ -93,6 +93,26 @@ def myint_to_prod_nat (n : myint) : ℕ × ℕ :=
       ext, { refl, }, { dsimp, apply aux4; linarith, },
     end )
 
+example  (n : myint) : ℕ × ℕ :=
+quotient.lift_on n prod_nat_to_prod_nat
+( λ a b h,
+  if hnna : (is_nonneg' a) then
+  begin
+    rw prod_nat_of_is_nonneg hnna,
+    dsimp [has_equiv.equiv, setoid.r, myintrel] at h,  dsimp [is_nonneg'] at hnna,
+    have hnnb : (is_nonneg' b), by { dsimp [is_nonneg'], linarith, },
+    rw prod_nat_of_is_nonneg hnnb,
+    ext, { dsimp, exact aux4 h hnna, }, { refl, },
+  end
+  else
+  begin
+    rw prod_nat_of_is_neg hnna,
+    dsimp [has_equiv.equiv, setoid.r, myintrel] at h,  dsimp [is_nonneg'] at hnna,
+    have hnnb : (¬is_nonneg' b), by { dsimp [is_nonneg'], linarith, },
+    rw prod_nat_of_is_neg hnnb,
+    ext, { refl, }, { dsimp, apply aux4; linarith, },
+  end )
+
 example : myint_to_prod_nat [[10, 4]] = (6,0) := rfl
 
 @[derive decidable]
@@ -125,7 +145,7 @@ instance has_zero_myint : has_zero myint := ⟨[[0, 0]]⟩
 
 private def neg_pair (n : ℕ × ℕ) : myint := [[n.2, n.1]]
 
-@[simp] def neg (n : myint) : quotient myint.setoid :=
+/- @[simp] def neg (n : myint) : quotient myint.setoid :=
 begin
   refine quot.lift neg_pair _ _,
   { exact myintrel },
@@ -135,7 +155,12 @@ begin
     dsimp [setoid.r, myintrel] at h ⊢,
     linarith [h], },
   { exact n, }
-end
+end -/
+
+def neg (n : myint) : quotient myint.setoid :=
+quotient.lift_on n neg_pair
+( λ a b h, quot.sound (by {dsimp [has_equiv.equiv, setoid.r, myintrel] at h ⊢,
+    simp only [add_comm, h], })) 
 
 instance has_neg_myint' : has_neg myint := ⟨neg⟩
 

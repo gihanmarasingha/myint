@@ -61,20 +61,15 @@ can be lifted to a function of type `quotient s → β` as long as the function 
 equivalence relation that defines `quotient s`.
 -/
 def myint_to_prod_nat (n : myint) : ℕ × ℕ :=
-quotient.lift_on n prod_nat_to_prod_nat
-( λ a b h,
-  if hnna : (is_nonneg' a) then
-  begin
-    dsimp [has_equiv.equiv, setoid.r, myintrel] at h,  dsimp [is_nonneg'] at hnna,
-    rw [prod_nat_of_is_nonneg hnna, prod_nat_of_is_nonneg (show is_nonneg' b, by { dsimp [is_nonneg'], linarith, })],
-    ext, { dsimp, exact aux h hnna, }, { refl, },
-  end
-  else
-  begin
-    dsimp [has_equiv.equiv, setoid.r, myintrel] at h,  dsimp [is_nonneg'] at hnna,
-    rw [prod_nat_of_is_neg hnna, prod_nat_of_is_neg (show ¬is_nonneg' b, by { dsimp [is_nonneg'], linarith, })],
-    ext, { refl, }, { dsimp, apply aux; linarith, },
-  end )
+begin
+  apply quotient.lift_on n prod_nat_to_prod_nat,
+  dsimp [has_equiv.equiv, setoid.r, myintrel, prod_nat_to_prod_nat],
+  intros a b h,
+  split_ifs; unfold is_nonneg' at *,
+  { ext, { dsimp, rwa aux h, }, refl, },
+  iterate 2 { ext; { dsimp, exfalso, linarith }, },
+  { ext; dsimp, { refl }, { apply aux; linarith }, },
+end
 
 example : myint_to_prod_nat [[10, 4]] = (6,0) := rfl
 

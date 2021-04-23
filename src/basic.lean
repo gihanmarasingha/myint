@@ -32,15 +32,6 @@ example : [[1, 6]] = [[10, 15]] := dec_trivial
 
 example : is_nonneg' (10,8) := dec_trivial
 
-/- def is_nonneg (n : myint) : Prop :=
-begin
-  apply quotient.lift is_nonneg' _ n,
-  dsimp [has_equiv.equiv, setoid.r, myintrel, is_nonneg'],
-  intros a b h, ext,
-  split;
-  { intro k, linarith, },
-end -/
-
 def prod_nat_to_prod_nat (n : ℕ × ℕ) : ℕ × ℕ := if is_nonneg' n then (n.1-n.2, 0) else (0, n.2-n.1)
 
 example : prod_nat_to_prod_nat (5,7) = (0, 2) := rfl
@@ -62,36 +53,21 @@ private lemma aux1 {x y u v : ℕ} (h : y ≤ x) (k : x + v = u + y) : u = x - y
 private lemma aux4 {x y u v : nat} (h : x + v = u + y) (k : x ≥ y) : x - y = u - v :=
 by rw [aux1 k h, nat.add_sub_cancel]
 
-/- private lemma aux2 {x y u v : ℕ} (h : y ≤ x) (k : x + v = u + y) : u = v + (x -y) :=
-  (aux1 h k).symm ▸ add_comm _ _
- -/
-/- def foo (n : myint) : Prop :=
-  quotient.lift_on n is_nonneg'
-  (λ a b h,
-    have k : a.1 + b.2 = b.1 + a.2, from h,
-    propext $ iff.intro
-    (λ ha, le_iff_exists_add.mpr (exists.intro (a.1-a.2) (aux2 ha k)))
-    (λ hb, le_iff_exists_add.mpr (exists.intro (b.1-b.2) (aux2 hb k.symm)))) -/
-
 def myint_to_prod_nat (n : myint) : ℕ × ℕ :=
-  quotient.lift_on n prod_nat_to_prod_nat
-  ( λ a b h,
-    if hnna : (is_nonneg' a) then
-    begin
-      rw prod_nat_of_is_nonneg hnna,
-      dsimp [has_equiv.equiv, setoid.r, myintrel] at h,  dsimp [is_nonneg'] at hnna,
-      have hnnb : (is_nonneg' b), by { dsimp [is_nonneg'], linarith, },
-      rw prod_nat_of_is_nonneg hnnb,
-      ext, { dsimp, exact aux4 h hnna, }, { refl, },
-    end
-    else
-    begin
-      rw prod_nat_of_is_neg hnna,
-      dsimp [has_equiv.equiv, setoid.r, myintrel] at h,  dsimp [is_nonneg'] at hnna,
-      have hnnb : (¬is_nonneg' b), by { dsimp [is_nonneg'], linarith, },
-      rw prod_nat_of_is_neg hnnb,
-      ext, { refl, }, { dsimp, apply aux4; linarith, },
-    end )
+quotient.lift_on n prod_nat_to_prod_nat
+( λ a b h,
+  if hnna : (is_nonneg' a) then
+  begin
+    dsimp [has_equiv.equiv, setoid.r, myintrel] at h,  dsimp [is_nonneg'] at hnna,
+    rw [prod_nat_of_is_nonneg hnna, prod_nat_of_is_nonneg (show is_nonneg' b, by { dsimp [is_nonneg'], linarith, })],
+    ext, { dsimp, exact aux4 h hnna, }, { refl, },
+  end
+  else
+  begin
+    dsimp [has_equiv.equiv, setoid.r, myintrel] at h,  dsimp [is_nonneg'] at hnna,
+    rw [prod_nat_of_is_neg hnna, prod_nat_of_is_neg (show ¬is_nonneg' b, by { dsimp [is_nonneg'], linarith, })],
+    ext, { refl, }, { dsimp, apply aux4; linarith, },
+  end )
 
 example : myint_to_prod_nat [[10, 4]] = (6,0) := rfl
 
@@ -124,18 +100,6 @@ instance has_one_myint : has_one myint := ⟨[[1, 0]]⟩
 instance has_zero_myint : has_zero myint := ⟨[[0, 0]]⟩
 
 protected def neg_pair (n : ℕ × ℕ) : myint := [[n.2, n.1]]
-
-/- @[simp] def neg (n : myint) : quotient myint.setoid :=
-begin
-  refine quot.lift neg_pair _ _,
-  { exact myintrel },
-  { intros a b h,
-    unfold neg_pair,
-    apply quot.sound,
-    dsimp [setoid.r, myintrel] at h ⊢,
-    linarith [h], },
-  { exact n, }
-end -/
 
 def neg (n : myint) : quotient myint.setoid :=
 quotient.lift_on n myint.neg_pair

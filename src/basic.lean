@@ -1,19 +1,19 @@
 import tactic
 
 @[derive decidable_rel]
-private def myintrel : ℕ × ℕ → ℕ × ℕ → Prop := λ a b, a.1 + b.2 = b.1 + a.2
+protected def myintrel : ℕ × ℕ → ℕ × ℕ → Prop := λ a b, a.1 + b.2 = b.1 + a.2
 
 local infix `~` := myintrel
 
-private theorem myintrel.refl : ∀ n : ℕ × ℕ, n ~ n := λ n, rfl
+protected theorem myintrel.refl : ∀ n : ℕ × ℕ, n ~ n := λ n, rfl
 
-private theorem myintrel.symm : ∀ n m : ℕ × ℕ, n ~ m → m ~ n :=
+protected theorem myintrel.symm : ∀ n m : ℕ × ℕ, n ~ m → m ~ n :=
   λ n m h, by { dsimp [myintrel] at *, symmetry, rw h, }
 
-private theorem myintrel.trans : ∀ n m k : ℕ × ℕ, n ~ m → m ~ k → n ~ k :=
+protected theorem myintrel.trans : ∀ n m k : ℕ × ℕ, n ~ m → m ~ k → n ~ k :=
   by { dsimp [myintrel], intros n m k h₁ h₂, linarith, }
 
-private theorem is_equivalence :
+protected theorem is_equivalence :
   equivalence myintrel := mk_equivalence myintrel myintrel.refl myintrel.symm myintrel.trans
 
 instance myint.setoid : setoid (ℕ × ℕ) := setoid.mk myintrel is_equivalence
@@ -123,7 +123,7 @@ instance has_one_myint : has_one myint := ⟨[[1, 0]]⟩
 
 instance has_zero_myint : has_zero myint := ⟨[[0, 0]]⟩
 
-private def neg_pair (n : ℕ × ℕ) : myint := [[n.2, n.1]]
+protected def neg_pair (n : ℕ × ℕ) : myint := [[n.2, n.1]]
 
 /- @[simp] def neg (n : myint) : quotient myint.setoid :=
 begin
@@ -138,11 +138,11 @@ begin
 end -/
 
 def neg (n : myint) : quotient myint.setoid :=
-quotient.lift_on n neg_pair
+quotient.lift_on n myint.neg_pair
 ( λ a b h, quot.sound (by {dsimp [has_equiv.equiv, setoid.r, myintrel] at h ⊢,
     simp only [add_comm, h], })) 
 
-instance has_neg_myint' : has_neg myint := ⟨neg⟩
+instance has_neg_myint : has_neg myint := ⟨neg⟩
 
 example : - [[5, 9]] = [[9, 5]] := rfl
 

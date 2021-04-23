@@ -4,6 +4,12 @@ namespace myint
 
 lemma add_pair_eq {a b : ℕ × ℕ} : ⟦a⟧ + ⟦b⟧ = add_pair a b := rfl
 
+/-
+`quotient.ind` gives the correspondence between elements of a quotient type and equivalence classes
+of the underlying type. It states that to prove `β q` for every `q` in a quotient type, it suffices
+to prove `β ⟦a⟧` for every `a` in the underlying type. 
+-/
+
 protected lemma add_comm : ∀ n m : myint, n + m = m + n :=
 by { apply quotient.ind₂, intros, simp [add_pair_eq, add_pair], congr' 1; apply nat.add_comm }
 

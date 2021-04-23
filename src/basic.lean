@@ -96,7 +96,7 @@ instance has_zero_myint : has_zero myint := ⟨[[0, 0]]⟩
 protected def neg_pair (n : ℕ × ℕ) : myint := [[n.2, n.1]]
 
 /-
-The definition `neg` below uses `quot.sound`. This result states that two elements `⟦a⟧` and `⟦b⟧`
+The definition `neg` below uses `quotient.sound`. This result states that two elements `⟦a⟧` and `⟦b⟧`
 of a quotient type are equal if their representatives are equivalent. That is, `a ≈ b → ⟦a⟧ = ⟦b⟧`.
 -/
 def neg (n : myint) : quotient myint.setoid :=

@@ -30,7 +30,7 @@ begin
 end
 
 -- Proving `add_assoc` requires three applications of `quotient.ind`.
-protected lemma add_assoc (n m k: myint) : n + m + k = n + (m + k) :=
+protected lemma add_assoc (n m k : myint) : n + m + k = n + (m + k) :=
 quotient.ind (λ a₁, quotient.ind (λ a₂, quotient.ind
   (λ a₃, by { simp [add_pair_eq, add_pair, mk], congr' 3; simp [nat.add_assoc] } ) k) m) n 
 
@@ -82,10 +82,8 @@ example (a b c d : myint) : (a + b) + (c + d) = b + (c + a) + d := by ac_refl
 -- The `•` symbol below is written `\smul` and represents the scalar multiplication `nsmul`.
 example : 3 • (-7 : myint) = -21 := dec_trivial
 
-@[simp] lemma nonneg_or_neg (a : myint) :
-  ∃ n : ℕ, a = [[n, 0]] ∨ a = [[0, n]] :=
+@[simp] lemma nonneg_or_neg : ∀ a : myint, ∃ n : ℕ, a = [[n, 0]] ∨ a = [[0, n]] :=
 begin
-  revert a,
   apply quotient.ind,
   rintro ⟨a₁, a₂⟩,
   cases (le_total a₁ a₂) with neg nonneg,

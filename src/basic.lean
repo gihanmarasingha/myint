@@ -149,14 +149,8 @@ example : - [[5, 9]] = [[9, 5]] := rfl
 def add_pair (n m : ℕ × ℕ) : myint := [[n.1 + m.1, n.2 + m.2]]
 
 def add : myint → myint → myint :=
-begin
-  apply quotient.lift₂ add_pair,
-  dsimp [has_equiv.equiv, setoid.r, myintrel, add_pair],
-  intros,
-  apply quotient.sound,
-  dsimp [has_equiv.equiv, setoid.r, myintrel],
-  linarith,
-end
+quotient.lift₂ add_pair
+( λ a₁ a₂ b₁ b₂ h₁ h₂, quot.sound (by {dsimp [has_equiv.equiv, setoid.r, myintrel] at *, linarith,}))
 
 instance has_add_myint : has_add myint := ⟨add⟩
 

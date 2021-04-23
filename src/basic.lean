@@ -24,7 +24,7 @@ namespace myint
 
 definition mk (a₁ a₂ : ℕ) : myint := ⟦(a₁, a₂)⟧
 
-local notation `[[` a₁ `,` a₂ `]]` := mk a₁ a₂
+notation `[[` a₁ `,` a₂ `]]` := mk a₁ a₂
 
 example : [[1, 6]] = [[10, 15]] := dec_trivial
 
@@ -93,26 +93,6 @@ def myint_to_prod_nat (n : myint) : ℕ × ℕ :=
       ext, { refl, }, { dsimp, apply aux4; linarith, },
     end )
 
-example  (n : myint) : ℕ × ℕ :=
-quotient.lift_on n prod_nat_to_prod_nat
-( λ a b h,
-  if hnna : (is_nonneg' a) then
-  begin
-    rw prod_nat_of_is_nonneg hnna,
-    dsimp [has_equiv.equiv, setoid.r, myintrel] at h,  dsimp [is_nonneg'] at hnna,
-    have hnnb : (is_nonneg' b), by { dsimp [is_nonneg'], linarith, },
-    rw prod_nat_of_is_nonneg hnnb,
-    ext, { dsimp, exact aux4 h hnna, }, { refl, },
-  end
-  else
-  begin
-    rw prod_nat_of_is_neg hnna,
-    dsimp [has_equiv.equiv, setoid.r, myintrel] at h,  dsimp [is_nonneg'] at hnna,
-    have hnnb : (¬is_nonneg' b), by { dsimp [is_nonneg'], linarith, },
-    rw prod_nat_of_is_neg hnnb,
-    ext, { refl, }, { dsimp, apply aux4; linarith, },
-  end )
-
 example : myint_to_prod_nat [[10, 4]] = (6,0) := rfl
 
 @[derive decidable]
@@ -166,7 +146,7 @@ instance has_neg_myint' : has_neg myint := ⟨neg⟩
 
 example : - [[5, 9]] = [[9, 5]] := rfl
 
-private def add_pair (n m : ℕ × ℕ) : myint := [[n.1 + m.1, n.2 + m.2]]
+def add_pair (n m : ℕ × ℕ) : myint := [[n.1 + m.1, n.2 + m.2]]
 
 def add : myint → myint → myint :=
 begin
@@ -179,6 +159,8 @@ begin
 end
 
 instance has_add_myint : has_add myint := ⟨add⟩
+
+instance has_add_myint' : has_add (quotient myint.setoid) := ⟨add⟩
 
 instance has_sub_myint : has_sub myint := ⟨λ a b, a + -b⟩
 

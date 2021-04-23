@@ -27,10 +27,6 @@ end
 protected lemma add_zero : ∀ a : myint, a + 0 = a :=
 by { intro, rw [myint.add_comm, myint.zero_add], }
 
-def nsmul : ℕ → myint → myint 
-| 0 x            := 0
-| (nat.succ n) x := x + (nsmul n x)
-
 protected lemma add_left_neg : ∀ a : myint, -a + a = 0 :=
 begin
   apply quotient.ind,
@@ -71,6 +67,11 @@ begin
   congr' 1; apply nat.add_assoc,
 end
 
+-- Here, `nsmul` is multiplication of a `myint` on the left by a `nat`.
+def nsmul : ℕ → myint → myint 
+| 0 x            := 0
+| (nat.succ n) x := x + (nsmul n x)
+
 instance add_semigroup_myint : add_semigroup myint :=
 { add := add,
   add_assoc := myint.add_assoc }
@@ -99,5 +100,18 @@ instance add_comm_monoid_myint : add_comm_monoid myint :=
 
 instance add_comm_group_myint : add_comm_group myint :=
 { ..myint.add_group_myint, ..myint.add_comm_monoid_myint }
+
+-- Having proved that `myint` is a `add_comm_group`, we can use the simplifier to prove theorems
+-- auomatically!
+example (a b : myint) : a + b - a = b := by simp
+
+-- Replacing `simp` above with `squeeze_simp` shows exactly which lemmas are needed. I used this
+-- to get the following.
+example (a b : myint) : a + b - a = b := by simp only [add_sub_cancel']
+
+-- The `•` symbol below is written `\smul` and represents the scalar multiplication `nsmul`.
+example : 3 • (-7 : myint) = -21 := dec_trivial
+
+example (a : myint) : ∃ n : ℕ, a = [[n, 0]] ∨ a = [[0, n]] := by simp
 
 end myint

@@ -82,17 +82,80 @@ example (a b c d : myint) : (a + b) + (c + d) = b + (c + a) + d := by ac_refl
 -- The `•` symbol below is written `\smul` and represents the scalar multiplication `nsmul`.
 example : 3 • (-7 : myint) = -21 := dec_trivial
 
-@[simp] lemma nonneg_or_neg : ∀ a : myint, ∃ n : ℕ, a = [[n, 0]] ∨ a = [[0, n]] :=
+lemma nonneg_or_neg : ∀ a : myint, ∃ n : ℕ, a = [[n, 0]] ∨ a = [[0, n.succ]] :=
 begin
   apply quotient.ind,
   rintro ⟨a₁, a₂⟩,
-  cases (le_total a₁ a₂) with neg nonneg,
-  { use a₂ - a₁, right, apply quot.sound,
-    dsimp [setoid.r, myintrel], simp [nat.add_sub_of_le, neg], },
+  cases (le_or_lt a₂ a₁) with nonneg neg,
   { use a₁ - a₂, left, apply quot.sound,
     dsimp [setoid.r, myintrel], simp [nat.sub_add_cancel, nonneg], },
+  { use (a₂ - a₁).pred, right, apply quot.sound,
+    dsimp [setoid.r, myintrel], simp [nat.add_sub_of_le, neg],
+    rw nat.succ_pred_eq_of_pos,
+    { exact nat.add_sub_of_le (le_of_lt neg) },
+    { exact nat.sub_pos_of_lt neg }, },
 end
 
-example (a : myint) : ∃ n : ℕ, a = [[n, 0]] ∨ a = [[0, n]] := by simp
+def prod_nat_to_int (n : ℕ × ℕ) : ℤ := n.1 - n.2
+
+/- A funtion from myint to int. -/
+def myint_to_int (n : myint) : ℤ :=
+begin
+  apply quotient.lift_on n prod_nat_to_int, intros a b h,
+  dsimp [has_equiv.equiv, setoid.r, myintrel] at h,
+  dsimp [prod_nat_to_int], linarith,
+end
+
+lemma myint_to_int_of_pair (n m : ℕ) : myint_to_int [[n, m]] = n - m := rfl
+
+example : myint_to_int [[6,13]] = -7 := rfl
+
+/-
+The function `myint_to_int` is additive.
+-/
+protected lemma map_add_myint_to_int : ∀ n m : myint, myint_to_int (n + m) = myint_to_int n + myint_to_int m :=
+begin
+  apply quotient.ind₂,
+  rintro ⟨a₁, a₂⟩ ⟨b₁, b₂⟩,
+  rw [add_pair_eq, add_pair, ←mk, ←mk],
+  repeat { rw myint_to_int_of_pair },
+  push_cast, linarith,
+end
+
+/- From the above result, we define `myint_to_int_hom`, an (additve group) homomorphism
+  from `myint` to `int`. -/
+def myint_to_int_hom : myint →+ ℤ :=
+{ to_fun := myint_to_int,
+  map_zero' := rfl,
+  map_add' := myint.map_add_myint_to_int }
+
+/-
+The function `myint_to_int` has an inverse function. We first define a function `int_to_prod_nat`
+-/
+def int_to_prod_nat : ℤ → ℕ × ℕ
+| (int.of_nat n)          := (n, 0)
+| (int.neg_succ_of_nat n) := (0, nat.succ n)
+
+example : int_to_prod_nat (-5) = (0,5) := rfl
+
+def int_to_myint (n : ℤ) :  myint := ⟦int_to_prod_nat n⟧
+
+lemma int_to_myint_of_nat (n : ℕ) : int_to_myint ↑n = [[n, 0]] := rfl
+
+lemma int_to_myint_of_neg_succ_of_nat (n : ℕ) : int_to_myint (-↑(nat.succ n)) = [[0, nat.succ n]] := rfl
+
+example : int_to_myint (-5) = [[0, 5]] := rfl
+
+/- We show that `myint_to_int` and `int_to_myint` are inverses of each other. -/
+def myint_to_int_equiv : equiv myint int :=
+{ to_fun := myint_to_int,
+  inv_fun := int_to_myint,
+  left_inv :=
+  by { intro n, rcases (nonneg_or_neg n) with ⟨a, rfl | rfl⟩; { rw myint_to_int_of_pair, norm_cast, }, },
+  right_inv := by {rintro ⟨_, _⟩; refl, }, }
+
+/- For free, we have an additive equivalence (i.e. a group isomomorphism) from `myint` to `int`. -/
+def myint_to_int_add_equiv : add_equiv myint int :=
+{ ..myint_to_int_equiv, ..myint_to_int_hom }
 
 end myint

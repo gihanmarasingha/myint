@@ -1,4 +1,5 @@
 import basic
+import group_theory.order_of_element
 
 namespace myint
 
@@ -98,7 +99,7 @@ end
 
 def prod_nat_to_int (n : ℕ × ℕ) : ℤ := n.1 - n.2
 
-/- A funtion from myint to int. -/
+/-- A funtion from myint to int. -/
 def myint_to_int (n : myint) : ℤ :=
 begin
   apply quotient.lift_on n prod_nat_to_int, intros a b h,
@@ -110,9 +111,7 @@ lemma myint_to_int_of_pair (n m : ℕ) : myint_to_int [[n, m]] = n - m := rfl
 
 example : myint_to_int [[6,13]] = -7 := rfl
 
-/-
-The function `myint_to_int` is additive.
--/
+/-- The function `myint_to_int` is additive. -/
 protected lemma map_add_myint_to_int : ∀ n m : myint, myint_to_int (n + m) = myint_to_int n + myint_to_int m :=
 begin
   apply quotient.ind₂,
@@ -122,40 +121,43 @@ begin
   push_cast, linarith,
 end
 
-/- From the above result, we define `myint_to_int_hom`, an (additve group) homomorphism
-  from `myint` to `int`. -/
-def myint_to_int_hom : myint →+ ℤ :=
+/-- Wwe define `myint_to_int_hom`, an (additve group) homomorphism from `myint` to `int`. -/
+def myint_to_int_add_monoid_hom : myint →+ ℤ :=
 { to_fun := myint_to_int,
   map_zero' := rfl,
   map_add' := myint.map_add_myint_to_int }
 
-/-
-The function `myint_to_int` has an inverse function. We first define a function `int_to_prod_nat`
--/
+/-- The function `myint_to_int` has an inverse function. We first define a function `int_to_prod_nat` -/
 def int_to_prod_nat : ℤ → ℕ × ℕ
 | (int.of_nat n)          := (n, 0)
 | (int.neg_succ_of_nat n) := (0, nat.succ n)
 
 example : int_to_prod_nat (-5) = (0,5) := rfl
 
+/-- `int_my_myint` is the composite of `quotient.mk` and `int_to_prod_nat`.-/
 def int_to_myint (n : ℤ) :  myint := ⟦int_to_prod_nat n⟧
-
-lemma int_to_myint_of_nat (n : ℕ) : int_to_myint ↑n = [[n, 0]] := rfl
-
-lemma int_to_myint_of_neg_succ_of_nat (n : ℕ) : int_to_myint (-↑(nat.succ n)) = [[0, nat.succ n]] := rfl
 
 example : int_to_myint (-5) = [[0, 5]] := rfl
 
-/- We show that `myint_to_int` and `int_to_myint` are inverses of each other. -/
-def myint_to_int_equiv : equiv myint int :=
+/-- We show that `myint_to_int` is an equivalence. Here, `myint ≃ int` is notation for `equiv myint int`. -/
+def myint_to_int_equiv : myint ≃ int := 
 { to_fun := myint_to_int,
   inv_fun := int_to_myint,
   left_inv :=
   by { intro n, rcases (nonneg_or_neg n) with ⟨a, rfl | rfl⟩; { rw myint_to_int_of_pair, norm_cast, }, },
   right_inv := by {rintro ⟨_, _⟩; refl, }, }
 
-/- For free, we have an additive equivalence (i.e. a group isomomorphism) from `myint` to `int`. -/
-def myint_to_int_add_equiv : add_equiv myint int :=
-{ ..myint_to_int_equiv, ..myint_to_int_hom }
+/-
+For free, we have an additive equivalence (i.e. a group isomomorphism) from `myint` to `int`.
+Here, `myint ≃+ int` is notation for `add_equiv myint int`.
+-/
+def myint_to_int_add_equiv : myint ≃+ int :=
+{ ..myint_to_int_equiv, ..myint_to_int_add_monoid_hom }
+
+/-
+Using this equivalence, we get (for free) that the equivalence respects orders of elements.
+-/
+example (a : myint) : add_order_of (myint_to_int a) = add_order_of a :=
+let f := myint_to_int_add_equiv in add_order_of_injective (f.to_add_monoid_hom) (f.injective) a
 
 end myint

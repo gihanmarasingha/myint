@@ -1,5 +1,6 @@
 import basic
 import group_theory.order_of_element
+import data.zmod.basic
 
 namespace myint
 
@@ -159,5 +160,19 @@ Using this equivalence, we get (for free) that the equivalence respects orders o
 -/
 example (a : myint) : add_order_of (myint_to_int a) = add_order_of a :=
 let f := myint_to_int_add_equiv in add_order_of_injective (f.to_add_monoid_hom) (f.injective) a
+
+def twice : ℤ →+ ℤ :=
+{ to_fun := λ x, 2 * x,
+  map_zero' := by simp,
+  map_add' := by simp [mul_add], }
+
+def five_z : add_subgroup int := add_subgroup.closure ({5} : set ℤ)
+
+def five_mint : add_subgroup myint := add_subgroup.closure ({5} : set myint)
+
+example : five_z.comap myint_to_int_add_monoid_hom = five_mint :=
+begin
+  sorry
+end
 
 end myint

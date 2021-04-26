@@ -21,8 +21,7 @@ example : five_z.comap f = five_mint :=
 begin
   have five_eq : (5 : myint) = [[5,0]] := rfl,
   convert add_subgroup.comap_map_eq f five_mint, swap,
-  { rw (add_monoid_hom.ker_eq_bot_iff f).mpr (by apply add_equiv.injective),
-    rw [sup_bot_eq], },
+  { rw [(add_monoid_hom.ker_eq_bot_iff f).mpr (by apply add_equiv.injective), sup_bot_eq], },
   simp only [←add_subgroup.gmultiples_eq_closure,five_z, five_mint],
   ext, split,
   { --  Want to show that if `x : ℤ` is in `five_z`, then `x` is in the image of `five_mint` under `f`.      
@@ -37,10 +36,8 @@ begin
       split, 
       { use (int.neg_succ_of_nat b), -- We first show `(1+b) • [[0,5]]` is in `five_myint`.
         conv_lhs { change (int.neg_succ_of_nat b) •ℤ (5 : myint)},
-        rw gsmul_neg_succ_of_nat,
-        rw [five_eq, nat.succ_eq_add_one, add_comm],
+        rw [gsmul_neg_succ_of_nat, five_eq, nat.succ_eq_add_one, add_comm],
         simp only [nsmul_myint_pair, myint.neg_pair'], }, 
-      
       { conv_rhs { change ((int.neg_succ_of_nat b) •ℤ (5 : int)) },  -- Now we show equality.
         rw [gsmul_neg_succ_of_nat, add_comm, nsmul_myint_pair],
         dsimp [myint_to_int_add_equiv, myint_to_int_equiv, myint_to_int_of_pair],

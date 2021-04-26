@@ -31,13 +31,15 @@ begin
   apply quot.sound, dsimp [setoid.r, myintrel], rw [add_zero, zero_add, add_comm],
 end
 
+protected lemma neg_pair' (a b : ℕ) : - [[a,b]] = [[b,a]] := by { apply quotient.sound, dsimp, refl, }
+
 -- Proving `add_assoc` requires three applications of `quotient.ind`.
 protected lemma add_assoc (n m k : myint) : n + m + k = n + (m + k) :=
 quotient.ind (λ a₁, quotient.ind (λ a₂, quotient.ind
   (λ a₃, by { simp [add_pair_eq, add_pair, mk], congr' 3; simp [nat.add_assoc] } ) k) m) n 
 
 -- Here, `nsmul` is multiplication of a `myint` on the left by a `nat`.
-def nsmul : ℕ → myint → myint 
+protected def nsmul : ℕ → myint → myint 
 | 0 x            := 0
 | (nat.succ n) x := x + (nsmul n x)
 
@@ -49,10 +51,22 @@ instance add_monoid_myint : add_monoid myint :=
 { zero := myint.has_zero_myint.zero,
   zero_add := myint.zero_add,
   add_zero := myint.add_zero,
-  nsmul := nsmul,
+  nsmul := myint.nsmul,
   nsmul_zero' := λ _, rfl,
   nsmul_succ' := λ _ _, rfl,
   ..myint.add_semigroup_myint }
+
+protected lemma nsmul_eq_nsmul {n : ℕ} {a : myint} : n • a = nsmul n a := rfl
+
+lemma nsmul_myint_pair {n a b : ℕ} : n • ([[a, b]] : myint) = [[n • a, n • b]] :=
+begin
+  repeat {rw myint.nsmul_eq_nsmul },
+  induction n with n ih,
+  { simpa [add_monoid.nsmul_zero'], },
+  { rw [add_monoid.nsmul_succ', ih], dsimp [mk],
+    rw [add_pair_eq, add_pair, nat.succ_eq_add_one, mk], 
+    congr'; linarith,  }
+end
 
 instance add_comm_semigroup_myint : add_comm_semigroup myint :=
 { add_comm := myint.add_comm,
@@ -160,19 +174,5 @@ Using this equivalence, we get (for free) that the equivalence respects orders o
 -/
 example (a : myint) : add_order_of (myint_to_int a) = add_order_of a :=
 let f := myint_to_int_add_equiv in add_order_of_injective (f.to_add_monoid_hom) (f.injective) a
-
-def twice : ℤ →+ ℤ :=
-{ to_fun := λ x, 2 * x,
-  map_zero' := by simp,
-  map_add' := by simp [mul_add], }
-
-def five_z : add_subgroup int := add_subgroup.closure ({5} : set ℤ)
-
-def five_mint : add_subgroup myint := add_subgroup.closure ({5} : set myint)
-
-example : five_z.comap myint_to_int_add_monoid_hom = five_mint :=
-begin
-  sorry
-end
 
 end myint

@@ -1,6 +1,5 @@
 import basic
 import group_theory.order_of_element
-import data.zmod.basic
 
 namespace myint
 

@@ -10,23 +10,23 @@ def five_mint : add_subgroup myint := add_subgroup.closure ({5} : set myint)
 
 example (a b : int) : (-a - b) = -(a+b) := (neg_add' a b).symm
 
+-- `f` is the `add_monoid` homomorphism from `mint` to `int` induced by the equivalence
+-- `myint_to_int_add_equiv`.
+abbreviation f := add_equiv.to_add_monoid_hom myint_to_int_add_equiv -- abbreviate the homom to `f`.
+
 /-
-The pullback of `five_z` along the add_monoid homomorphism induced by the equivalence
-`myint_to_int_add_equiv` is `five_mint`.
+The pullback of `five_z` along `f`  is `five_mint`.
 -/
-example : five_z.comap (add_equiv.to_add_monoid_hom myint_to_int_add_equiv) = five_mint :=
+example : five_z.comap f = five_mint :=
 begin
-  let f := add_equiv.to_add_monoid_hom myint_to_int_add_equiv, -- abbreviate the homom to `f`.
   have five_eq : (5 : myint) = [[5,0]] := rfl,
   convert add_subgroup.comap_map_eq f five_mint, swap,
   { rw (add_monoid_hom.ker_eq_bot_iff f).mpr (by apply add_equiv.injective),
     rw [sup_bot_eq], },
   simp only [←add_subgroup.gmultiples_eq_closure,five_z, five_mint],
   ext, split,
-  { --  Want to show that if `x : ℤ` is in `five_z`, then `x` is in the image of `five_mint`
-    --  under `f`.      
-    -- There are two cases to consider. Either `x` 'is' `a • 5` or it is `-(1+b) • 5` for `a b : ℕ`.
-    rintro ⟨a | b, rfl⟩,
+  { --  Want to show that if `x : ℤ` is in `five_z`, then `x` is in the image of `five_mint` under `f`.      
+    rintro ⟨a | b, rfl⟩, -- There are two cases to consider. Either `x` 'is' `a • 5` or it is `-(1+b) • 5` for `a b : ℕ`.
     { use a • [[5,0]], -- We'll show `a • 5` is `f (a • [[5, 0]])`
       split,
       { use a, rw ←five_eq, conv_lhs { change (a) •ℤ (5 : myint)}, norm_num, },
@@ -47,8 +47,7 @@ begin
         simp only [zero_sub, int.coe_nat_zero, mul_eq_mul_left_iff, nsmul_eq_mul, bit1_eq_bit1, int.coe_nat_succ,
           neg_inj, zero_add, int.nat_cast_eq_coe_nat, mul_zero, int.coe_nat_bit1, int.coe_nat_mul], -- found by `squeeze_simp`.
         left, refl, }, }, },
-  { --  Want to show that if `x : ℤ` is in the image of `five_mint` under `f`, then
-    --  `x ∈ five_z`.   
+  { --  Want to show that if `x : ℤ` is in the image of `five_mint` under `f`, then `x ∈ five_z`.   
     -- `x : ℤ` is written as `f (w • 5)` for some `w : ℤ`. We must show `f (w • 5) ∈ five_z`.
     rintro ⟨_, ⟨a | b, rfl⟩, rfl⟩, -- Split into cases where `w` 'equals' `a` or `-(1+b)` for `a b : ℕ`.
     { use a, conv_lhs { change (a •ℤ (5 :int)) },
